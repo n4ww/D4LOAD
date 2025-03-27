@@ -1,8 +1,12 @@
 from flask import Flask, render_template, request, send_file
-import yt_dlp # type: ignore
+import yt_dlp  # type: ignore
 import os
 
 def download_video(url):
+    # إنشاء المجلد إذا لم يكن موجودًا
+    if not os.path.exists('downloads'):
+        os.makedirs('downloads')
+    
     ydl_opts = {
         'format': 'bestvideo+bestaudio/best',
         'outtmpl': 'downloads/%(title)s.%(ext)s',
@@ -11,7 +15,7 @@ def download_video(url):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
         filename = ydl.prepare_filename(info)
-        return filename
+        return os.path.abspath(filename)  # استخدام المسار المطلق
 
 app = Flask(__name__)
 
@@ -29,5 +33,4 @@ def download():
         return f"Error: {e}" 
 
 if __name__ == '__main__':
-    os.makedirs('downloads', exist_ok=True)
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=10000, debug=True)
