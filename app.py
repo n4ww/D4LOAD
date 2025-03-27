@@ -1,21 +1,5 @@
-from flask import Flask, render_template, request, send_file
-import yt_dlp  # type: ignore
-import os
-
-def download_video(url):
-    # إنشاء المجلد إذا لم يكن موجودًا
-    if not os.path.exists('downloads'):
-        os.makedirs('downloads')
-    
-    ydl_opts = {
-        'format': 'bestvideo+bestaudio/best',
-        'outtmpl': 'downloads/%(title)s.%(ext)s',
-    }
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info)
-        return os.path.abspath(filename)  # استخدام المسار المطلق
+from flask import Flask, render_template, request, redirect, url_for
+import yt_dlp
 
 app = Flask(__name__)
 
@@ -25,16 +9,25 @@ def index():
 
 @app.route('/download', methods=['POST'])
 def download():
-    url = request.form['url']
-    try:
-        filepath = download_video(url)
-        return send_file(filepath, as_attachment=True)
-    except Exception as e:
-        return f"Error: {e}" 
+    video_url = request.form.get('url')
+
+    if video_url:
+        try:
+            # إعداد خيارات yt-dlp
+            ydl_opts = {
+                'outtmpl': 'downloads/%(title)s.%(ext)s',  # تعيين مكان حفظ الفيديو
+                'format': 'best',  # تنزيل أفضل جودة ممكنة
+            }
+            
+            # تحميل الفيديو باستخدام yt-dlp
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([video_url])
+            
+            return f"تم تنزيل الفيديو بنجاح من الرابط: {video_url}"
+
+        except Exception as e:
+            return f"حدث خطأ أثناء تنزيل الفيديو: {str(e)}"
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000, debug=True)
-    
-import logging
-
-logging.basicConfig(level=logging.DEBUG)
+    app.run(debug=True)

@@ -3,19 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download The Video</title>
-    <link rel="stylesheet" href="style.css">
+    <title>تحميل فيديو</title>
 </head>
 
 <body>
-    <div class="container">
-        <h2> Download The Video </h2>
-        <form action="/download" method="post">
-            <input type="text" name="url" placeholder="link" required>
-            <button type="submit">Download</button>
-        </form>
-    </div>
+    <h1>أدخل رابط الفيديو لتنزيله</h1>
+    <form action="/download" method="POST">
+        <input type="text" name="url" placeholder="رابط الفيديو هنا" required>
+        <button type="submit">تنزيل</button>
+    </form>
 </body>
 
 </html>
