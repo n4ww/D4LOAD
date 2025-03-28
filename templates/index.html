@@ -1,56 +1,79 @@
 <!DOCTYPE html>
 <html lang="ar">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع تحميل الفيديو</title>
-    <link rel="stylesheet" type="text/css" href="static/styles.css">
-
+<link>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تحميل فيديو من يوتيوب</title>
+<link rel="stylesheet" href="../static/styles.css">
 </head>
 
 <body>
-    <!-- الشريط العلوي -->
-    <header>
-        <nav>
-            <div class="logo">
-                <h1>تحميل الفيديو</h1>
-            </div>
-            <ul>
-                <li><a href="#">الرئيسية</a></li>
-                <li><a href="#">حول</a></li>
-                <li><a href="#">اتصل بنا</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <!-- المحتوى الرئيسي -->
-    <section class="main-content">
-        <h2>أدخل رابط الفيديو</h2>
-        <form method="POST" action="/download">
-            <label for="url">رابط الفيديو:</label>
-            <input type="text" id="url" name="url" placeholder="ضع رابط الفيديو هنا" required>
-
-            <!-- اختيار الجودة -->
-            <label for="quality">اختر الجودة:</label>
-            <select name="quality" id="quality" required>
-                <option value="best">أفضل جودة</option>
-                <option value="worst">أقل جودة</option>
-                <option value="audio">صوت فقط</option>
-            </select>
-
-            <!-- اختيار الصيغة -->
-            <label for="format">اختر الصيغة:</label>
-            <select name="format" id="format" required>
-                <option value="mp4">MP4</option>
-                <option value="webm">WEBM</option>
-                <option value="mkv">MKV</option>
-            </select>
-
-            <button type="submit">تحميل</button>
+    <div class="container">
+        <h2>تحميل فيديو من يوتيوب</h2>
+        <form id="videoForm">
+            <input type="text" id="videoURL" name="url" placeholder="أدخل رابط الفيديو">
+            <button type="submit">تحميل </button>
         </form>
-    </section>
 
+        <div id="videoInfo" style="display: none;">
+            <h3>اختر الجودة</h3>
+            <form id="downloadForm">
+                <select id="formatSelect" name="format_id"></select>
+                <button type="submit">تحميل</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("videoForm").onsubmit = function (event) {
+            event.preventDefault();
+            let url = document.getElementById("videoURL").value;
+
+            fetch('/get_video_info', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `url=${encodeURIComponent(url)}`
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        let select = document.getElementById("formatSelect");
+                        select.innerHTML = "";
+                        data.formats.forEach(format => {
+                            let option = document.createElement("option");
+                            option.value = format.format_id;
+                            option.textContent = `${format.resolution} (${format.ext})`;
+                            select.appendChild(option);
+                        });
+                        document.getElementById("videoInfo").style.display = "block";
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        };
+
+        document.getElementById("downloadForm").onsubmit = function (event) {
+            event.preventDefault();
+            let url = document.getElementById("videoURL").value;
+            let format_id = document.getElementById("formatSelect").value;
+
+            fetch('/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `url=${encodeURIComponent(url)}&format_id=${encodeURIComponent(format_id)}`
+            })
+                .then(response => response.blob())
+                .then(blob => {
+                    let link = document.createElement("a");
+                    link.href = URL.createObjectURL(blob);
+                    link.download = "video.mp4";
+                    link.click();
+                })
+                .catch(error => console.error('Error:', error));
+        };
+    </script>
 </body>
 
 </html>
