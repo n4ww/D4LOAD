@@ -25,10 +25,13 @@ def get_video_info():
         return jsonify({'error': '❌ يرجى إدخال رابط الفيديو'}), 400
 
     try:
+        # إعدادات yt-dlp مع الكوكيز
         ydl_opts = {
             'quiet': True,
             'cookiefile': COOKIES_FILE  # إضافة ملف الكوكيز
         }
+        
+        # استخراج المعلومات من الفيديو
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             formats = []
@@ -62,6 +65,7 @@ def download_video():
     if not url or not format_id:
         return "❌ يرجى إدخال رابط الفيديو وتحديد الجودة", 400
 
+    # مسارات حفظ الفيديو والصوت النهائي
     video_path = os.path.join(DOWNLOAD_FOLDER, "video.mp4")
     audio_path = os.path.join(DOWNLOAD_FOLDER, "audio.mp4")
     final_path = os.path.join(DOWNLOAD_FOLDER, "final_video.mp4")
