@@ -25,6 +25,10 @@ def get_video_info():
         return jsonify({'error': '❌ يرجى إدخال رابط الفيديو'}), 400
 
     try:
+        # التحقق من وجود ملف الكوكيز
+        if not os.path.exists(COOKIES_FILE):
+            return jsonify({'error': '❌ لم يتم العثور على ملف الكوكيز. تأكد من أنك قد قمت بتصدير الكوكيز بشكل صحيح.'}), 400
+
         # إعدادات yt-dlp مع الكوكيز
         ydl_opts = {
             'quiet': True,
@@ -64,6 +68,10 @@ def download_video():
 
     if not url or not format_id:
         return "❌ يرجى إدخال رابط الفيديو وتحديد الجودة", 400
+
+    # التحقق من وجود ملف الكوكيز
+    if not os.path.exists(COOKIES_FILE):
+        return "❌ لم يتم العثور على ملف الكوكيز. تأكد من أنك قد قمت بتصدير الكوكيز بشكل صحيح.", 400
 
     # مسارات حفظ الفيديو والصوت النهائي
     video_path = os.path.join(DOWNLOAD_FOLDER, "video.mp4")
