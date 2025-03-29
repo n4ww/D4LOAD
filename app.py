@@ -9,6 +9,9 @@ app = Flask(__name__)
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
 
+# مسار ملف الكوكيز
+COOKIES_FILE = "cookies.txt"  # افترض أن ملف الكوكيز تم تصديره هنا
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -22,7 +25,10 @@ def get_video_info():
         return jsonify({'error': '❌ يرجى إدخال رابط الفيديو'}), 400
 
     try:
-        ydl_opts = {'quiet': True}
+        ydl_opts = {
+            'quiet': True,
+            'cookiefile': COOKIES_FILE  # إضافة ملف الكوكيز
+        }
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
             formats = []
@@ -63,13 +69,15 @@ def download_video():
     # إعداد تحميل الفيديو فقط
     ydl_opts_video = {
         'format': format_id,  # تحميل الفيديو فقط
-        'outtmpl': video_path
+        'outtmpl': video_path,
+        'cookiefile': COOKIES_FILE  # إضافة ملف الكوكيز
     }
 
     # إعداد تحميل الصوت فقط
     ydl_opts_audio = {
         'format': 'bestaudio',  # تحميل أفضل جودة صوت متاحة
-        'outtmpl': audio_path
+        'outtmpl': audio_path,
+        'cookiefile': COOKIES_FILE  # إضافة ملف الكوكيز
     }
 
     try:
